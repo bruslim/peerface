@@ -1,9 +1,7 @@
-torrentmeta
+Peerface
 ===========
 
-Torrent file abstraction for node
-
-depends on bxxcode-gmp (need to support large integers)
+Peer communication layer for bittorrent
 
 MIT License
 
