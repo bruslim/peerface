@@ -1,0 +1,32 @@
+{
+  "name": "peerface",
+  "version": "0.0.0",
+  "description": "bittorrent peer communication library",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "bitfield": "^1.0.2",
+    "rsvp": "^3.0.9"
+  },
+  "devDependencies": {
+    "tape": "^2.14.0"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bruslim/peerface.git"
+  },
+  "keywords": [
+    "bittorrent"
+  ],
+  "author": "bruslim",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/bruslim/peerface/issues"
+  },
+  "homepage": "https://github.com/bruslim/peerface"
+}
