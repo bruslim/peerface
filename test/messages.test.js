@@ -45,6 +45,7 @@ test('keep-alive dto test', function(t) {
   var msg = new lib.Messages.KeepAlive(bytes);
   
   t.equal(msg.len, 0, 'message len should be 0');
+  t.deepEqual(msg.toBuffer(),bytes, "buffers should match");
   
   t.end();
 });
@@ -55,6 +56,7 @@ test('choke dto test', function(t) {
   
   t.equal(msg.len, 1, 'message len should be 1');
   t.equal(msg.id, 0, 'message id should be 0');
+  t.deepEqual(msg.toBuffer(),bytes, "buffers should match");
   
   t.end();
 });
@@ -65,6 +67,7 @@ test('unchoke dto test', function(t) {
 
   t.equal(msg.len, 1, 'message len should be 1');
   t.equal(msg.id, 1, 'message id should be 1');
+  t.deepEqual(msg.toBuffer(),bytes, "buffers should match");
   
   t.end();
 });
@@ -75,6 +78,7 @@ test('interested dto test', function(t) {
 
   t.equal(msg.len, 1, 'message len should be 1');
   t.equal(msg.id, 2, 'message id should be 2');
+  t.deepEqual(msg.toBuffer(),bytes, "buffers should match");
   
   t.end();
 });
@@ -85,6 +89,7 @@ test('not-interested dto test', function(t) {
 
   t.equal(msg.len, 1, 'message len should be 1');
   t.equal(msg.id, 3, 'message id should be 3');
+  t.deepEqual(msg.toBuffer(),bytes, "buffers should match");
   
   t.end();
 });
@@ -96,6 +101,7 @@ test('have dto test', function(t) {
   t.equal(msg.len, 5, 'message len should be 1');
   t.equal(msg.id, 4, 'message id should be 4');
   t.equal(msg.pieceIndex, 1, 'message piece index should be 1');
+  t.deepEqual(msg.toBuffer(),bytes, "buffers should match");
   
   t.end();
 });
@@ -120,6 +126,7 @@ test('bitfield dto test', function(t) {
   t.equal(msg.len, length, 'message len should be ' + length);
   t.equal(msg.id, 5, 'message id should be 5');
   t.deepEquals(msg.bitfield, bitfield, 'bitfields should match');
+  t.deepEqual(msg.toBuffer(),bytes, "buffers should match");
   
   t.end();
 });
@@ -140,6 +147,7 @@ test('request dto test', function(t) {
   t.equal(msg.index, 0, 'message index should be 0');
   t.equal(msg.begin, 0, 'message index should be 0');
   t.equal(msg.length, 5, 'message index should be 5');
+  t.deepEqual(msg.toBuffer(),bytes, "buffers should match");
   
   t.end();
 });
@@ -164,6 +172,7 @@ test('piece dto test', function(t){
   t.equal(msg.index, 0, 'message index should be 0');
   t.equal(msg.begin, 0, 'message begin should be 0');
   t.deepEqual(msg.block,block, 'message block should match');
+  t.deepEqual(msg.toBuffer(),bytes, "buffers should match");
   
   t.end();
 });
@@ -184,6 +193,7 @@ test('cancel dto test', function(t){
   t.equal(msg.index, 0, 'message index should be 0');
   t.equal(msg.begin, 0, 'message index should be 0');
   t.equal(msg.length, 5, 'message index should be 5');
+  t.deepEqual(msg.toBuffer(),bytes, "buffers should match");
   
   t.end();
 });
@@ -200,6 +210,10 @@ test('port dto test', function(t){
   t.equal(msg.len, 3, 'message len should be 1');
   t.equal(msg.id, 9, 'message id should be 8');
   t.equal(msg.listenPort, 10, 'message listenPort should be 10');
-
+  t.deepEqual(msg.toBuffer(),bytes, "buffers should match");
+  
   t.end();
+});
+
+test('route data test', function(t) {
 });
