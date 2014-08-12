@@ -13,9 +13,11 @@ var lib = require('../index');
 test('handshake dto test', function(t){
   var infoHash, peerId;
   peerId = crypto.randomBytes(10).toString('hex');
+  var pstrlen = new Buffer(1);
+  pstrlen.writeUInt8(19,0);
   var bytes = Buffer.concat([
     // pstrlen
-    new Buffer([19]),
+    pstrlen,
     // pstr
     new Buffer('BitTorrent protocol'),
     // reserved
@@ -26,13 +28,14 @@ test('handshake dto test', function(t){
     new Buffer(peerId)
   ]);
 
+  console.log(new Buffer(peerId).length, bytes.length, 19+49);
   var msg = new lib.Messages.Handshake(bytes);
   
   t.equal(msg.pstrlen, 19, 'pstrlen should be 19');
   t.equal(msg.pstr, 'BitTorrent protocol', "pstr should be 'BitTorrent protocol'");
   t.deepEqual(msg._infoHash, infoHash, "info_hashes should match");
   t.equal(msg.peerId, peerId, "peer_ids should match");
-  
+  t.deepEqual(msg.toBuffer(),bytes, "buffers should match");
   t.end();
   
 });
