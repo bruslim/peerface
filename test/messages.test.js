@@ -10,6 +10,8 @@ var test = require('tape');
 
 var Bitfield = require('bitfield');
 
+var RSVP = require('rsvp');
+
 var lib = require('../index');
 
 var infoHash = crypto.randomBytes(20);
@@ -497,24 +499,77 @@ test('route data test', function(t) {
 });
 
 test('send/recieve messages', function(t) {
+  
+  t.plan(3);
 
-  t.plan(1);
+  var defered = [];
   
   var server = lib.listen(65001);
   server.on('peer-connected', function(peer){
-    peer.once('handshake', function(e){
+    
+    peer._socket.on('data', function(bytes) {
+      console.log('data', bytes);
+    });
+    
+    peer.on('handshake', function(e){
       t.deepEqual(handshakeMessage, e.toBuffer(), "handshake should equal");
-      peer.close();
-      server.stop();
+      defered.pop().resolve();
+    });
+    
+    peer.on('keep-alive', function(e) {
+      t.deepEqual(messages.keepAlive, e.toBuffer(), "keep-alive should equal");
+      defered.pop().resolve();
+    });
+    
+    peer.on('choke', function(e) {
+      t.deepEqual(messages.choke, e.toBuffer(), "choke should equal");
+      defered.pop().resolve();
+    });
+    
+    
+    peer.on('unknown',function(e) {
+      console.log('unknown', e);
     });
   });
-  
+
+  function next() {
+    var d = RSVP.defer();
+    defered.push(d);
+    return d.promise;
+  }
   
   var connected = lib.connect('localhost', 65001);
   connected.then(function(remote){
     var handshake = new lib.Messages.Handshake(handshakeMessage);
     remote.handshake(handshake.peerId, handshake.infoHash);
-    remote.close();
+    next().then(function(){
+      remote.keepAlive();
+      return next();
+    }).then(function(){
+      remote.choke();
+      return next();
+    }).then(function(){
+//      remote.unchoke();
+//      remote.interested();
+//      remote.notInterested();
+//      remote.have(10);
+//      var bitfield = new Bitfield(128);
+//      bitfield.set(5);
+//      remote.bitfield(bitfield);
+//      remote.request(0,1,2);
+//      remote.cancel(0,1,2);
+//      remote.piece(0,1,crypto.randomBytes(5));
+//      remote.port(6881);
+      
+      remote.close();
+    
+      server.stop();
+
+      // dunno why server isn't closing
+      server.server.unref();
+    });
+    
+    
   });
  
 });
