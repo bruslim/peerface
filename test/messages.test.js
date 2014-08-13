@@ -224,9 +224,30 @@ test('port dto test', function(t){
   t.end();
 });
 
+test('unknown dto test', function(t) {
+  
+  var bytes = messages.unknown = new Buffer([
+    0,0,0,1,
+    15
+  ]);
+  
+  var msg = new lib.Messages.Peer(bytes);
+  
+  t.equal(msg.len, 1, 'message len should be 1');
+  t.equal(msg.id, 15, 'message id should be 8');
+  t.deepEqual(msg.toBuffer(),bytes, "buffers should match");
+  
+  t.end();
+  
+});
+
+
 test('route data test', function(t) {
   var mockSocket = new events.EventEmitter();
   var peer = new lib.PeerConnection(mockSocket);
+  
+  
+  t.plan(14);
   
   t.test("handshake", function(t) {
   
@@ -386,51 +407,115 @@ test('route data test', function(t) {
     clearTimeout(peer._deathTimer);
   });
   
-  t.test("all the messages", function(t) {
-    peer.on('keep-alive', function(e) {
-      t.deepEqual(messages.keepAlive, e.toBuffer(), "keep-alive should be the same");
-    });
-    peer.on('choke', function(e) {
-      t.deepEqual(messages.choke, e.toBuffer(), "choke should be the same");
-    });
-    peer.on('unchoke', function(e) {
-      t.deepEqual(messages.unchoke, e.toBuffer(), "unchoke should be the same");
-    });
-    peer.on('interested', function(e) {
-      t.deepEqual(messages.interested, e.toBuffer(), "interested should be the same");
-    });
-    peer.on('not-interested', function(e) {
-      t.deepEqual(messages.notInterested, e.toBuffer(), "not-interested should be the same");
-    });
-    peer.on('have', function(e) {
-      t.deepEqual(messages.have, e.toBuffer(), "have should be the same");
-    });
-    peer.on('bitfield', function(e) {
-      t.deepEqual(messages.bitfield, e.toBuffer(), "bitfield should be the same");
-    });
-    peer.on('request', function(e) {
-      t.deepEqual(messages.request, e.toBuffer(), "request should be the same");
-    });
-    peer.on('piece', function(e) {
-      t.deepEqual(messages.piece, e.toBuffer(), "piece should be the same");
-    });
-    peer.on('cancel', function(e) {
-      t.deepEqual(messages.cancel, e.toBuffer(), "cancel should be the same");
-    });  
-    peer.on('port', function(e) {
-      t.deepEqual(messages.port, e.toBuffer(), "port should be the same");
-    });
-
-    var keys = Object.keys(messages);
-    var bytes = Buffer.concat(keys.map(function(key){ return messages[key]; }));
+  t.test("unknown", function(t) {
     
-    t.plan(keys.length+1);
+    peer.once('unknown', function(e){
+      t.deepEqual(messages.unknown, e.toBuffer(), "unknown should be the same");
+    });
     
-    t.equal(peer.routeData(bytes).length, keys.length, "should have " + keys.length + " messages");
+    t.plan(1);
+    
+    peer.routeData(messages.unknown);
     
     // clear the deathTimer since this seems to hang tape
     clearTimeout(peer._deathTimer);
   });
   
+  t.test("all the messages", function(t) {
+    peer.once('keep-alive', function(e) {
+      t.deepEqual(messages.keepAlive, e.toBuffer(), "keep-alive should be the same");
+      clearTimeout(peer._deathTimer);
+    });
+    peer.once('choke', function(e) {
+      t.deepEqual(messages.choke, e.toBuffer(), "choke should be the same");
+      clearTimeout(peer._deathTimer);
+    });
+    peer.once('unchoke', function(e) {
+      t.deepEqual(messages.unchoke, e.toBuffer(), "unchoke should be the same");
+      clearTimeout(peer._deathTimer);
+    });
+    peer.once('interested', function(e) {
+      t.deepEqual(messages.interested, e.toBuffer(), "interested should be the same");
+      clearTimeout(peer._deathTimer);
+    });
+    peer.once('not-interested', function(e) {
+      t.deepEqual(messages.notInterested, e.toBuffer(), "not-interested should be the same");
+      clearTimeout(peer._deathTimer);
+    });
+    peer.once('have', function(e) {
+      t.deepEqual(messages.have, e.toBuffer(), "have should be the same");
+      clearTimeout(peer._deathTimer);
+    });
+    peer.once('bitfield', function(e) {
+      t.deepEqual(messages.bitfield, e.toBuffer(), "bitfield should be the same");
+      clearTimeout(peer._deathTimer);
+    });
+    peer.once('request', function(e) {
+      t.deepEqual(messages.request, e.toBuffer(), "request should be the same");
+      clearTimeout(peer._deathTimer);
+    });
+    peer.once('piece', function(e) {
+      t.deepEqual(messages.piece, e.toBuffer(), "piece should be the same");
+      clearTimeout(peer._deathTimer);
+    });
+    peer.once('cancel', function(e) {
+      t.deepEqual(messages.cancel, e.toBuffer(), "cancel should be the same");
+      clearTimeout(peer._deathTimer);
+    });  
+    peer.once('port', function(e) {
+      t.deepEqual(messages.port, e.toBuffer(), "port should be the same");
+      clearTimeout(peer._deathTimer);
+    });
+    
+    peer.once('error', function(e) {
+      t.equal("error test", e, "error should be emitted");
+      clearTimeout(peer._deathTimer);
+    });
+    
+    peer.once('close', function(e) {
+      t.equal("close test", e, "close should be emitted");
+      clearTimeout(peer._deathTimer);
+    });
+
+    var keys = Object.keys(messages);
+    var bytes = Buffer.concat(keys.map(function(key){ return messages[key]; }));
+    
+    t.plan(keys.length+2);
+    
+    mockSocket.emit('data', bytes);
+    mockSocket.emit('error', "error test");
+    mockSocket.emit('close', "close test");
+    
+    //t.equal(peer.routeData(bytes).length, keys.length, "should have " + keys.length + " messages");
+    
+    // clear the deathTimer since this seems to hang tape
+    //
+    
+  });
+  
   t.end();
 });
+
+test('send/recieve messages', function(t) {
+
+  t.plan(1);
+  
+  var server = lib.listen(65001);
+  server.on('peer-connected', function(peer){
+    peer.once('handshake', function(e){
+      t.deepEqual(handshakeMessage, e.toBuffer(), "handshake should equal");
+      peer.close();
+      server.stop();
+    });
+  });
+  
+  
+  var connected = lib.connect('localhost', 65001);
+  connected.then(function(remote){
+    var handshake = new lib.Messages.Handshake(handshakeMessage);
+    remote.handshake(handshake.peerId, handshake.infoHash);
+    remote.close();
+  });
+ 
+});
+
