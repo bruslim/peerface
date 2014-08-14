@@ -34,7 +34,21 @@ var messages = {
   keepAlive: new Buffer([0,0,0,0]),
   choke: new Buffer([0,0,0,1,0]), 
   unchoke: new Buffer([0,0,0,1,1]),
-  interested: new Buffer([0,0,0,1,2])
+  interested: new Buffer([0,0,0,1,2]),
+  request : new Buffer([
+    0,0,0,13,
+    6,
+    0,0,0,0,
+    0,0,0,0,
+    0,0,0,5
+  ]),
+  cancel : new Buffer([
+    0,0,0,13,
+    8,
+    0,0,0,0,
+    0,0,0,0,
+    0,0,0,5
+  ])
 };
 
 test('handshake dto test', function(t){
@@ -47,6 +61,21 @@ test('handshake dto test', function(t){
   t.deepEqual(msg._infoHash, infoHash, "info_hashes should match");
   t.equal(msg.peerId, peerId, "peer_ids should match");
   t.deepEqual(msg.toBuffer(),bytes, "buffers should match");
+  
+  t.throws(function(){
+    var badMsg = new lib.Messages.Handshake(
+      Buffer.concat([
+        pstrlen,
+        // pstr
+        new Buffer('BitTorrent protocol'),
+        // reserved
+        new Buffer([0,0,0,0,0,0,0,0]),
+        // info hash
+        infoHash
+      ])
+    );
+  },new Error('bytes length is invalid'),"should throw an exception for a message that has an invalid length");
+  
   t.end();
   
 });
@@ -58,6 +87,24 @@ test('keep-alive dto test', function(t) {
   t.equal(msg.len, 0, 'message len should be 0');
   t.deepEqual(msg.toBuffer(),bytes, "buffers should match");
   
+  t.throws(
+    function(){
+      var badMsg = new lib.Messages.KeepAlive(new Buffer([
+        0,0,0,1
+      ]));
+    },
+    new Error("Invalid TCP Message, length of body does not match."),
+    "Should throw an exception for a message that has an invalid length" 
+  );
+  
+  t.throws(
+    function(){
+      var badMsg = new lib.Messages.KeepAlive("test");
+    },
+    new TypeError('bytes must be a Buffer'),
+    "Should throw an exception when bytes is not a buffer" 
+  );
+  
   t.end();
 });
 
@@ -68,6 +115,13 @@ test('choke dto test', function(t) {
   t.equal(msg.len, 1, 'message len should be 1');
   t.equal(msg.id, 0, 'message id should be 0');
   t.deepEqual(msg.toBuffer(),bytes, "buffers should match");
+  t.throws(
+    function(){
+      var badMsg = new lib.Messages.Choke(messages.unchoke);
+    },
+    new Error('Invalid choke message id'),
+    "should throw an exception with invalid message id"
+  );
   
   t.end();
 });
@@ -80,6 +134,14 @@ test('unchoke dto test', function(t) {
   t.equal(msg.id, 1, 'message id should be 1');
   t.deepEqual(msg.toBuffer(),bytes, "buffers should match");
   
+  t.throws(
+    function(){
+      var badMsg = new lib.Messages.Unchoke(messages.choke);
+    },
+    new Error('Invalid unchoke message id'),
+    "should throw an exception with invalid message id"
+  );
+  
   t.end();
 });
 
@@ -89,8 +151,12 @@ test('interested dto test', function(t) {
 
   t.equal(msg.len, 1, 'message len should be 1');
   t.equal(msg.id, 2, 'message id should be 2');
-  t.deepEqual(msg.toBuffer(),bytes, "buffers should match");
+  t.deepEqual(msg.toBuffer(), bytes, "buffers should match");
   
+  t.throws(function(){
+    var badMsg = new lib.Messages.Interested(messages.request);
+  },new Error('Invalid interested message id'),"should throw an exception with invalid message id");
+        
   t.end();
 });
 
@@ -101,6 +167,14 @@ test('not-interested dto test', function(t) {
   t.equal(msg.len, 1, 'message len should be 1');
   t.equal(msg.id, 3, 'message id should be 3');
   t.deepEqual(msg.toBuffer(),bytes, "buffers should match");
+  
+  t.throws(
+    function(){
+      var badMsg = new lib.Messages.NotInterested(messages.unchoke);
+    },
+    new Error('Invalid not-interested message id'),
+    "should throw an exception with invalid message id"
+  );
   
   t.end();
 });
@@ -113,6 +187,10 @@ test('have dto test', function(t) {
   t.equal(msg.id, 4, 'message id should be 4');
   t.equal(msg.pieceIndex, 1, 'message piece index should be 1');
   t.deepEqual(msg.toBuffer(),bytes, "buffers should match");
+  
+  t.throws(function(){
+    var badMsg = new lib.Messages.Have(messages.request);
+  },new Error('Invalid have message id'),"should throw an exception with invalid message id");
   
   t.end();
 });
@@ -139,17 +217,20 @@ test('bitfield dto test', function(t) {
   t.deepEquals(msg.bitfield, bitfield, 'bitfields should match');
   t.deepEqual(msg.toBuffer(),bytes, "buffers should match");
   
+  var emptyMsg = new lib.Messages.Bitfield();
+  var emptyBuffer = new Buffer([]);
+  t.deepEqual(emptyBuffer, emptyMsg._bitfield, "bitfield should be empty buffer");
+  t.equal(null, emptyMsg.bitfield, "bitfield should be null");
+  
+  t.throws(function(){
+    var badMsg = new lib.Messages.Bitfield(messages.choke);
+  },new Error('Invalid bitfield message id'),"should throw an exception with invalid message id");
+  
   t.end();
 });
 
 test('request dto test', function(t) {
-  var bytes = messages.request = new Buffer([
-    0,0,0,13,
-    6,
-    0,0,0,0,
-    0,0,0,0,
-    0,0,0,5
-  ]);
+  var bytes = messages.request;
   
   var msg = new lib.Messages.Request(bytes);
   
@@ -159,6 +240,14 @@ test('request dto test', function(t) {
   t.equal(msg.begin, 0, 'message index should be 0');
   t.equal(msg.length, 5, 'message index should be 5');
   t.deepEqual(msg.toBuffer(),bytes, "buffers should match");
+  
+  t.throws(
+    function(){
+      var badMsg = new lib.Messages.Request(messages.cancel);
+    },
+    new Error('Invalid request message id'),
+    "should throw an exception with invalid message id"
+  );
   
   t.end();
 });
@@ -185,17 +274,19 @@ test('piece dto test', function(t){
   t.deepEqual(msg.block,block, 'message block should match');
   t.deepEqual(msg.toBuffer(),bytes, "buffers should match");
   
+  t.throws(
+    function(){
+      var badMsg = new lib.Messages.Piece(messages.request);
+    },
+    new Error('Invalid piece message id'),
+    "should throw an exception with invalid message id"
+  );
+  
   t.end();
 });
 
 test('cancel dto test', function(t){
-  var bytes = messages.cancel = new Buffer([
-    0,0,0,13,
-    8,
-    0,0,0,0,
-    0,0,0,0,
-    0,0,0,5
-  ]);
+  var bytes = messages.cancel;
   
   var msg = new lib.Messages.Cancel(bytes);
   
@@ -205,6 +296,10 @@ test('cancel dto test', function(t){
   t.equal(msg.begin, 0, 'message index should be 0');
   t.equal(msg.length, 5, 'message index should be 5');
   t.deepEqual(msg.toBuffer(),bytes, "buffers should match");
+  
+  t.throws(function(){
+    var badMsg = new lib.Messages.Cancel(messages.request);
+  },new Error('Invalid cancel message id'),"should throw an exception with invalid message id");
   
   t.end();
 });
@@ -222,6 +317,14 @@ test('port dto test', function(t){
   t.equal(msg.id, 9, 'message id should be 8');
   t.equal(msg.listenPort, 10, 'message listenPort should be 10');
   t.deepEqual(msg.toBuffer(),bytes, "buffers should match");
+  
+  t.throws(
+    function(){
+      var badMsg = new lib.Messages.Port(messages.request);
+    },
+    new Error('Invalid port message id'),
+    "should throw an exception with invalid message id"
+  );
   
   t.end();
 });
@@ -242,7 +345,6 @@ test('unknown dto test', function(t) {
   t.end();
   
 });
-
 
 test('route data test', function(t) {
   var mockSocket = new events.EventEmitter();
@@ -500,35 +602,75 @@ test('route data test', function(t) {
 
 test('send/recieve messages', function(t) {
   
-  t.plan(3);
+  t.plan(12);
 
   var defered = [];
   
   var server = lib.listen(65001);
   server.on('peer-connected', function(peer){
     
-    peer._socket.on('data', function(bytes) {
-      console.log('data', bytes);
-    });
-    
     peer.on('handshake', function(e){
-      t.deepEqual(handshakeMessage, e.toBuffer(), "handshake should equal");
       defered.pop().resolve();
+      t.deepEqual(e.toBuffer(), handshakeMessage, "handshake should equal");
     });
     
     peer.on('keep-alive', function(e) {
-      t.deepEqual(messages.keepAlive, e.toBuffer(), "keep-alive should equal");
       defered.pop().resolve();
+      t.deepEqual(e.toBuffer(), messages.keepAlive, "keep-alive should equal");
     });
     
     peer.on('choke', function(e) {
-      t.deepEqual(messages.choke, e.toBuffer(), "choke should equal");
       defered.pop().resolve();
+      t.deepEqual(e.toBuffer(), messages.choke, "choke should equal");
     });
     
+    peer.on('unchoke', function(e) {
+      defered.pop().resolve();
+      t.deepEqual(e.toBuffer(), messages.unchoke, "unchoke should equal");
+    });
+    
+    peer.on('interested', function(e) {
+      defered.pop().resolve();
+      t.deepEqual(e.toBuffer(), messages.interested, "intersted should equal");
+    });
+    
+    peer.on('not-interested', function(e) {
+      defered.pop().resolve();
+      t.deepEqual(e.toBuffer(), messages.notInterested, "not-interested should equal");
+    });
+    
+    peer.on('have', function(e) {
+      defered.pop().resolve();
+      t.deepEqual(e.toBuffer(), messages.have, "have should equal");
+    });
+    
+    peer.on('bitfield', function(e) {
+      defered.pop().resolve();
+      t.deepEqual(e.toBuffer(), messages.bitfield, "bitfield should equal");
+    });
+    
+    peer.on('request', function(e) {
+      defered.pop().resolve();
+      t.deepEqual(e.toBuffer(), messages.request, "request should equal");
+    });
+    
+    peer.on('cancel', function(e) {
+      defered.pop().resolve();
+      t.deepEqual(e.toBuffer(), messages.cancel, "cancel should equal");
+    });
+    
+    peer.on('piece', function(e) {
+      defered.pop().resolve();
+      t.deepEqual(e.toBuffer(), messages.piece, "piece should equal");
+    });
+    
+    peer.on('port', function(e) {
+      defered.pop().resolve();
+      t.deepEqual(e.toBuffer(), messages.port, "port should equal");
+    });
     
     peer.on('unknown',function(e) {
-      console.log('unknown', e);
+      t.fail("Unknown message received", JSON.stringify(e));
     });
   });
 
@@ -549,22 +691,41 @@ test('send/recieve messages', function(t) {
       remote.choke();
       return next();
     }).then(function(){
-//      remote.unchoke();
-//      remote.interested();
-//      remote.notInterested();
-//      remote.have(10);
-//      var bitfield = new Bitfield(128);
-//      bitfield.set(5);
-//      remote.bitfield(bitfield);
-//      remote.request(0,1,2);
-//      remote.cancel(0,1,2);
-//      remote.piece(0,1,crypto.randomBytes(5));
-//      remote.port(6881);
-      
+      remote.unchoke();
+      return next();
+    }).then(function(){
+      remote.interested();
+      return next();
+    }).then(function(){
+      remote.notInterested();
+      return next();
+    }).then(function(){
+      var msg = new lib.Messages.Have(messages.have);
+      remote.have(msg.pieceIndex);
+      return next();
+    }).then(function(){
+      var msg = new lib.Messages.Bitfield(messages.bitfield);
+      remote.bitfield(msg.bitfield);
+      return next();
+    }).then(function(){
+      var msg = new lib.Messages.Request(messages.request);
+      remote.request(msg.index, msg.begin, msg.length);
+      return next();
+    }).then(function(){
+      var msg = new lib.Messages.Cancel(messages.cancel);
+      remote.cancel(msg.index, msg.begin, msg.length);
+      return next();
+    }).then(function(){
+      var msg = new lib.Messages.Piece(messages.piece);
+      remote.piece(msg.index, msg.begin, msg.block);
+      return next();
+    }).then(function(){
+      var msg = new lib.Messages.Port(messages.port);
+      remote.port(msg.listenPort);
+      return next();
+    }).then(function(){
       remote.close();
-    
       server.stop();
-
       // dunno why server isn't closing
       server.server.unref();
     });
@@ -574,3 +735,23 @@ test('send/recieve messages', function(t) {
  
 });
 
+test('firing error and stop', function(t) {
+
+  var server = lib.listen(65002);
+  
+  t.plan(2);
+  
+  server.once('stopped', function(e){
+    t.notOk(e,"stopped fired");
+  });
+  
+  server.once('error', function(e) {
+    t.pass("error fired");
+  });
+  
+  server._fireStopped(false);
+  server._fireError();
+  
+  server.stop();
+  
+});
