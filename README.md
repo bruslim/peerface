@@ -5,6 +5,65 @@ Peer communication layer for bittorrent
 
 ## Usage
 
+~~~~~~~~~~ js
+
+// import
+var Peerface = require('peerface');
+
+// create the server, and listen for incoming messages
+var server = Peerface.listen(6881);
+
+// connect to a peer
+var peer = Peerface.connect(ipAddress, port);
+
+// listen for a peer
+server.on('peer-connected', function(peer){
+  
+  // listen for protocol messages from peer
+  peer.on('handshake', function(msg){ ... });
+  peer.on('keep-alive', function(msg){ ... });
+  peer.on('choke', function(msg){ ... });
+  peer.on('unchoke', function(msg){ ... });
+  peer.on('interested', function(msg){ ... });
+  peer.on('not-interested', function(msg){ ... });
+  peer.on('have', function(msg){ ... });
+  peer.on('bitfield', function(msg){ ... });
+  peer.on('request', function(msg){ ... });
+  peer.on('piece', function(msg){ ... });
+  peer.on('cancel', function(msg){ ... });
+  peer.on('port', function(msg){ ... });
+  
+  // listen for socket events
+  peer.on('close', function(hadError) { ... });
+  peer.on('error', function(err) { ... });
+  
+  // send protocol messages to peer
+  peer.handshake(peerId, infoHash); // infohash buffer or base64 string
+  peer.keepAlive();
+  peer.choke();
+  peer.unchoke();
+  peer.interested();
+  peer.notInterested();
+  peer.have(pieceIndex);
+  peer.bitfield(bitfield); // use node-bitfield
+  peer.request(index, begin, length);
+  peer.piece(index, begin, bytes); // bytes is a buffer
+  peer.cancel(index, begin, length);
+  peer.port(listenPort);
+  
+});
+
+// listen for server errors
+server.on('error', function(err) { ... });
+
+// listen for server stopping
+server.on('stopping', function(date) { ... });
+
+// listen for server stop
+server.on('stop', function(hadError) { ... });
+
+~~~~~~~~~~
+
 
 ## License
 
