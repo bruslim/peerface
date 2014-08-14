@@ -6,7 +6,7 @@ Peer communication layer for bittorrent
 ## Usage
 
 
-## Licence
+## License
 
 ~~~~~~~~~~~
 
