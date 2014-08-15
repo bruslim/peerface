@@ -3,6 +3,13 @@ Peerface
 
 Peer communication layer for bittorrent
 
+To install:
+
+~~~~~~~~~
+npm install peerface
+~~~~~~~~~
+
+
 ## Usage
 
 ~~~~~~~~~~ js
