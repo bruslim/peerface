@@ -1,7 +1,9 @@
 Peerface
 ===========
 
-Peer communication layer for bittorrent
+Evented, peer communication module for BitTorrent.
+
+All events return a `Message` object which contains properties named according to the spec.
 
 To install:
 
