@@ -102,7 +102,7 @@ THE SOFTWARE.
 
 ## Thanks
 
-Made @ [HackerSchool (S'14 June)](www.hackerschool.com)
+Made @ [HackerSchool (S'14 June)](https://www.hackerschool.com)
 
 Also thanks to [Carlos](https://github.com/carletex) for pairing with me
 and helping me debug this library.
