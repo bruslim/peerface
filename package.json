@@ -1,6 +1,6 @@
 {
   "name": "peerface",
-  "version": "0.0.5",
+  "version": "0.0.5a",
   "description": "bittorrent peer communication library",
   "main": "index.js",
   "directories": {
