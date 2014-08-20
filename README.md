@@ -11,6 +11,8 @@ To install:
 npm install peerface
 ~~~~~~~~~
 
+[![Code Climate](https://codeclimate.com/github/bruslim/peerface/badges/gpa.svg)](https://codeclimate.com/github/bruslim/peerface)
+[![Test Coverage](https://codeclimate.com/github/bruslim/peerface/badges/coverage.svg)](https://codeclimate.com/github/bruslim/peerface)
 
 ## Usage
 
