@@ -1,6 +1,9 @@
 Peerface
 ===========
 
+[![Code Climate](https://codeclimate.com/github/bruslim/peerface/badges/gpa.svg)](https://codeclimate.com/github/bruslim/peerface)
+[![Test Coverage](https://codeclimate.com/github/bruslim/peerface/badges/coverage.svg)](https://codeclimate.com/github/bruslim/peerface)
+
 Evented, peer communication module for BitTorrent.
 
 All events return a `Message` object which contains properties named according to the spec.
@@ -10,9 +13,6 @@ To install:
 ~~~~~~~~~
 npm install peerface
 ~~~~~~~~~
-
-[![Code Climate](https://codeclimate.com/github/bruslim/peerface/badges/gpa.svg)](https://codeclimate.com/github/bruslim/peerface)
-[![Test Coverage](https://codeclimate.com/github/bruslim/peerface/badges/coverage.svg)](https://codeclimate.com/github/bruslim/peerface)
 
 ## Usage
 
