@@ -1,6 +1,7 @@
 Peerface
 ===========
 
+[![Travis CI](https://travis-ci.org/bruslim/peerface.svg?branch=master)]
 [![Code Climate](https://codeclimate.com/github/bruslim/peerface/badges/gpa.svg)](https://codeclimate.com/github/bruslim/peerface)
 [![Test Coverage](https://codeclimate.com/github/bruslim/peerface/badges/coverage.svg)](https://codeclimate.com/github/bruslim/peerface)
 
