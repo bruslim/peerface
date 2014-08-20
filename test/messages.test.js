@@ -399,7 +399,7 @@ test('route data test', function(t) {
     });
 
     t.plan(1);
-
+   
     peer.routeData(messages.unchoke);
     
     // clear the deathTimer since this seems to hang tape
@@ -525,6 +525,8 @@ test('route data test', function(t) {
     clearTimeout(peer._deathTimer);
   });
   
+  
+  
   t.test("all the messages", function(t) {
     peer.once('keep-alive', function(e) {
       t.deepEqual(messages.keepAlive, e.toBuffer(), "keep-alive should be the same");
@@ -586,7 +588,9 @@ test('route data test', function(t) {
     
     t.plan(keys.length+2);
     
-    mockSocket.emit('data', bytes);
+    // send it in 2 frames
+    mockSocket.emit('data', bytes.slice(0, bytes.length/2));
+    mockSocket.emit('data', bytes.slice(bytes.length/2));
     mockSocket.emit('error', "error test");
     mockSocket.emit('close', "close test");
     
@@ -602,7 +606,7 @@ test('route data test', function(t) {
 
 test('send/recieve messages', function(t) {
   
-  t.plan(12);
+  t.plan(13);
 
   var defered = [];
   
@@ -720,12 +724,20 @@ test('send/recieve messages', function(t) {
       remote.piece(msg.index, msg.begin, msg.block);
       return next();
     }).then(function(){
-      var msg = new lib.Messages.Port(messages.port);
+      var msg = new lib.Messages.Port(messages.port).init({
+        ignore: 'ignored'
+      });
       remote.port(msg.listenPort);
       return next();
     }).then(function(){
+      
+      t.throws(function() {
+        remote.write("");
+      }, new TypeError(), "writing a string should throw an error");
+      
       remote.close();
       server.stop();
+      
       // dunno why server isn't closing
       server.server.unref();
     });
@@ -735,7 +747,7 @@ test('send/recieve messages', function(t) {
  
 });
 
-test('firing error and stop', function(t) {
+test('testing error, stop', function(t) {
 
   var server = lib.listen(65002);
   
