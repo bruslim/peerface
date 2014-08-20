@@ -9,6 +9,8 @@ Evented, peer communication module for BitTorrent.
 
 All events return a `Message` object which contains properties named according to the spec.
 
+All socket writes are throttled by `process.nextTick()` do not block the stack.
+
 To install:
 
 ~~~~~~~~~
@@ -18,7 +20,6 @@ npm install peerface
 ## Usage
 
 ~~~~~~~~~~ js
-
 // import
 var Peerface = require('peerface');
 
@@ -73,14 +74,12 @@ server.on('stopping', function(date) { ... });
 
 // listen for server stop
 server.on('stop', function(hadError) { ... });
-
 ~~~~~~~~~~
 
 
 ## License
 
 ~~~~~~~~~~~
-
 The MIT License (MIT)
 
 Copyright (c) 2014 Brian Ruslim
@@ -102,7 +101,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-
 ~~~~~~~~~~~
 
 ## Thanks
