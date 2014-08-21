@@ -26,8 +26,8 @@ var Peerface = require('peerface');
 // create the server, and listen for incoming messages
 var server = Peerface.listen(6881);
 
-// connect to a peer
-var peer = Peerface.connect(ipAddress, port);
+// connect to a peer (promises)
+Peerface.connect(ipAddress, port).then(function(peer){ ... });
 
 // listen for a peer
 server.on('peer-connected', function(peer){
