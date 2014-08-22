@@ -23,11 +23,11 @@ npm install peerface
 // import
 var Peerface = require('peerface');
 
-// create the server, and listen for incoming messages
-var server = Peerface.listen(6881);
-
 // connect to a peer (promises)
 Peerface.connect(ipAddress, port).then(function(peer){ ... });
+
+// create the server, and listen for incoming messages
+var server = Peerface.listen(6881);
 
 // listen for a peer
 server.on('peer-connected', function(peer){
@@ -50,7 +50,9 @@ server.on('peer-connected', function(peer){
   peer.on('close', function(hadError) { ... });
   peer.on('error', function(err) { ... });
   
-  // send protocol messages to peer
+  // send protocol messages to peer (returns promises)
+  // promise is resolved when message has been fully written
+  // to the underlying socket
   peer.handshake(peerId, infoHash); // infohash buffer or base64 string
   peer.keepAlive();
   peer.choke();

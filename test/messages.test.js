@@ -606,7 +606,7 @@ test('route data test', function(t) {
 
 test('send/recieve messages', function(t) {
   
-  t.plan(13);
+  t.plan(24);
 
   var defered = [];
   
@@ -689,45 +689,45 @@ test('send/recieve messages', function(t) {
     var handshake = new lib.Messages.Handshake(handshakeMessage);
     remote.handshake(handshake.peerId, handshake.infoHash);
     next().then(function(){
-      remote.keepAlive();
+      t.ok(remote.keepAlive() instanceof RSVP.Promise, "should return promise");
       return next();
     }).then(function(){
-      remote.choke();
+      t.ok(remote.choke() instanceof RSVP.Promise, "should return promise");
       return next();
     }).then(function(){
-      remote.unchoke();
+      t.ok(remote.unchoke() instanceof RSVP.Promise, "should return promise");
       return next();
     }).then(function(){
-      remote.interested();
+      t.ok(remote.interested() instanceof RSVP.Promise, "should return promise");
       return next();
     }).then(function(){
-      remote.notInterested();
+      t.ok(remote.notInterested() instanceof RSVP.Promise, "should return promise");
       return next();
     }).then(function(){
       var msg = new lib.Messages.Have(messages.have);
-      remote.have(msg.pieceIndex);
+      t.ok(remote.have(msg.pieceIndex) instanceof RSVP.Promise, "should return promise");
       return next();
     }).then(function(){
       var msg = new lib.Messages.Bitfield(messages.bitfield);
-      remote.bitfield(msg.bitfield);
+      t.ok(remote.bitfield(msg.bitfield) instanceof RSVP.Promise, "should return promise");
       return next();
     }).then(function(){
       var msg = new lib.Messages.Request(messages.request);
-      remote.request(msg.index, msg.begin, msg.length);
+      t.ok(remote.request(msg.index, msg.begin, msg.length) instanceof RSVP.Promise, "should return promise");
       return next();
     }).then(function(){
       var msg = new lib.Messages.Cancel(messages.cancel);
-      remote.cancel(msg.index, msg.begin, msg.length);
+      t.ok(remote.cancel(msg.index, msg.begin, msg.length) instanceof RSVP.Promise, "should return promise");
       return next();
     }).then(function(){
       var msg = new lib.Messages.Piece(messages.piece);
-      remote.piece(msg.index, msg.begin, msg.block);
+      t.ok(remote.piece(msg.index, msg.begin, msg.block) instanceof RSVP.Promise, "should return promise");
       return next();
     }).then(function(){
       var msg = new lib.Messages.Port(messages.port).init({
         ignore: 'ignored'
       });
-      remote.port(msg.listenPort);
+      t.ok(remote.port(msg.listenPort) instanceof RSVP.Promise, "should return promise");
       return next();
     }).then(function(){
       
@@ -763,6 +763,8 @@ test('testing error, stop', function(t) {
   
   server._fireStopped(false);
   server._fireError();
+  
+  
   
   server.stop();
   
