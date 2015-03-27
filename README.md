@@ -107,7 +107,7 @@ THE SOFTWARE.
 
 ## Thanks
 
-Made @ [HackerSchool (S'14 June)](https://www.hackerschool.com)
+Made @ [Recurse Center (S'14 June)](https://www.recurse.com)
 
 Also thanks to [Carlos](https://github.com/carletex) for pairing with me
 and helping me debug this library.
